@@ -38,12 +38,12 @@ class OllamaResponse(BaseModel):
     created_at: datetime | None = None
     message: Message
     done: bool
-    total_duration: int
-    load_duration: int = 0
-    prompt_eval_count: int = Field(0, validate_default=True)
-    prompt_eval_duration: int
-    eval_count: int
-    eval_duration: int
+    total_duration: int = Field(default=0)
+    load_duration: int = Field(default=0)
+    prompt_eval_count: int = Field(default=0)
+    prompt_eval_duration: int = Field(default=0)
+    eval_count: int = Field(default=0)
+    eval_duration: int = Field(default=0)
 
     @classmethod
     def from_chat_response(cls, response) -> 'OllamaResponse':
@@ -63,12 +63,12 @@ class OllamaResponse(BaseModel):
                 content=response.message.content
             ),
             done=response.done,
-            total_duration=response.total_duration,
-            load_duration=response.load_duration,
-            prompt_eval_count=response.prompt_eval_count,
-            prompt_eval_duration=response.prompt_eval_duration,
-            eval_count=response.eval_count,
-            eval_duration=response.eval_duration
+            total_duration=getattr(response, 'total_duration', 0),
+            load_duration=getattr(response, 'load_duration', 0),
+            prompt_eval_count=getattr(response, 'prompt_eval_count', 0),
+            prompt_eval_duration=getattr(response, 'prompt_eval_duration', 0),
+            eval_count=getattr(response, 'eval_count', 0),
+            eval_duration=getattr(response, 'eval_duration', 0)
         )
 
 
@@ -88,30 +88,71 @@ def run_benchmark(
     Returns:
         OllamaResponse object containing benchmark results, or None if failed
     """
-    last_element = None
     messages = [{"role": "user", "content": prompt}]
 
     try:
         if verbose:
+            # For verbose mode, we'll collect the content while streaming
+            content = ""
             stream = ollama.chat(
                 model=model_name,
                 messages=messages,
                 stream=True,
             )
             for chunk in stream:
-                print(chunk.message.content, end="", flush=True)
-                last_element = chunk
-        else:
-            last_element = ollama.chat(
+                if hasattr(chunk.message, 'content'):
+                    content += chunk.message.content
+                    print(chunk.message.content, end="", flush=True)
+            
+            if not content.strip():
+                print(f"\nError: Ollama model {model_name} returned empty response. Please check if:")
+                print("1. The model is properly loaded")
+                print("2. The Ollama server is functioning correctly")
+                print("3. Try running 'ollama run {model_name}' in terminal to verify model output")
+                return None
+            
+            # Make a non-streaming call to get the metrics
+            response = ollama.chat(
                 model=model_name,
                 messages=messages,
             )
-
-        if not last_element:
-            print(f"Error: No response received from model {model_name}")
-            return None
-
-        return OllamaResponse.from_chat_response(last_element)
+            
+            # Check if response has content
+            if not hasattr(response.message, 'content') or not response.message.content.strip():
+                print(f"\nError: Ollama model {model_name} returned empty response in non-streaming mode")
+                return None
+            
+            # Create response with collected content and metrics
+            return OllamaResponse(
+                model=model_name,
+                message=Message(
+                    role="assistant",
+                    content=content
+                ),
+                done=True,
+                total_duration=getattr(response, 'total_duration', 0),
+                load_duration=getattr(response, 'load_duration', 0),
+                prompt_eval_count=getattr(response, 'prompt_eval_count', 0),
+                prompt_eval_duration=getattr(response, 'prompt_eval_duration', 0),
+                eval_count=getattr(response, 'eval_count', 0),
+                eval_duration=getattr(response, 'eval_duration', 0)
+            )
+        else:
+            # For non-verbose mode, just make a single non-streaming call
+            response = ollama.chat(
+                model=model_name,
+                messages=messages,
+            )
+            
+            # Check if response has content
+            if not hasattr(response.message, 'content') or not response.message.content.strip():
+                print(f"\nError: Ollama model {model_name} returned empty response. Please check if:")
+                print("1. The model is properly loaded")
+                print("2. The Ollama server is functioning correctly")
+                print("3. Try running 'ollama run {model_name}' in terminal to verify model output")
+                return None
+                
+            return OllamaResponse.from_chat_response(response)
 
     except Exception as e:
         print(f"Error benchmarking {model_name}: {str(e)}")
@@ -211,14 +252,21 @@ def get_benchmark_models(test_models: List[str] = []) -> List[str]:
     available_models = [model.get("model") for model in response.get("models", [])]
     
     if not test_models:
-        return available_models
-
-    # Filter requested models against available ones
-    model_names = [model for model in test_models if model in available_models]
-    if len(model_names) < len(test_models):
-        missing_models = set(test_models) - set(available_models)
-        print(f"Warning: Some requested models are not available: {missing_models}")
+        # Use a default subset of models if none specified
+        default_models = ["llama2", "mistral", "codellama"]  # Common default models
+        model_names = [m for m in available_models if any(d in m for d in default_models)]
+        if not model_names:
+            model_names = available_models[:3]  # Take first 3 available models if no defaults found
+    else:
+        # Filter requested models against available ones
+        model_names = [model for model in test_models if model in available_models]
+        if len(model_names) < len(test_models):
+            missing_models = set(test_models) - set(available_models)
+            print(f"Warning: Some requested models are not available: {missing_models}")
     
+    if not model_names:
+        raise RuntimeError("No valid models found for benchmarking")
+        
     print(f"Evaluating models: {model_names}\n")
     return model_names
 
