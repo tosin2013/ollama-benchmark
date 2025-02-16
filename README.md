@@ -11,36 +11,38 @@ Average stats:
 (Running on dual 3090 Ti GPU, Epyc 7763 CPU in Ubuntu 22.04)
 
 ----------------------------------------------------
-        deepseek-r1:70b
-                Prompt eval: 340.91 t/s
-                Response: 17.66 t/s
-                Total: 18.02 t/s
+        Model: deepseek-r1:70b
+        Performance Metrics:
+            Prompt Processing:  336.73 tokens/sec
+            Generation Speed:   17.65 tokens/sec
+            Combined Speed:     18.01 tokens/sec
 
-        Stats:
-                Prompt tokens: 165
-                Response tokens: 7608
-                Model load time: 6.35s
-                Prompt eval time: 0.48s
-                Response time: 430.88s
-                Total time: 437.72s
+        Workload Stats:
+            Input Tokens:       165
+            Generated Tokens:   7673
+            Model Load Time:    6.11s
+            Processing Time:    0.49s
+            Generation Time:    434.70s
+            Total Time:         441.31s
 ----------------------------------------------------
 
 Average stats: 
 (Running on single 3090 GPU, 13900KS CPU in WSL2(Ubuntu 22.04) in Windows 11)
 
 ----------------------------------------------------
-        deepseek-r1:8b-llama-distill-q8_0
-                Prompt eval: 1057.69 t/s
-                Response: 75.84 t/s
-                Total: 76.77 t/s
+        Model: deepseek-r1:32b
+        Performance Metrics:
+            Prompt Processing:  399.05 tokens/sec
+            Generation Speed:   27.18 tokens/sec
+            Combined Speed:     27.58 tokens/sec
 
-        Stats:
-                Prompt tokens: 165
-                Response tokens: 12509
-                Model load time: 3.28s
-                Prompt eval time: 0.16s
-                Response time: 164.94s
-                Total time: 168.38s
+        Workload Stats:
+            Input Tokens:       168
+            Generated Tokens:   10601
+            Model Load Time:    15.44s
+            Processing Time:    0.42s
+            Generation Time:    390.00s
+            Total Time:         405.87s
 ----------------------------------------------------
 ```
 
