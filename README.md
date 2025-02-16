@@ -1,4 +1,4 @@
-# LLM Benchmark (ollama only)
+# Ollama based LLM Benchmark
 
 This tool allows you to get the t/s (tokens per second) of Large Language Models (LLMs) running on your local machine. Currently we only support testing Ollama llms
 
