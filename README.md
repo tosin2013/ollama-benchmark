@@ -2,6 +2,15 @@
 
 This tool allows you to get the t/s (tokens per second) of Large Language Models (LLMs) running on your local machine. Currently we only support testing Ollama llms
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- [Installation Guide](docs/installation_guide.md) - Step-by-step instructions for setting up the benchmark suite
+- [User Guide](docs/user_guide.md) - Detailed instructions for all features 
+- [GUI Implementation Guide](docs/gui_implementation_guide.md) - How to implement or modify a graphical interface
+- [Documentation Overview](docs/README.md) - Summary of all documentation
+
 ## Example output
 
 Output on a Nvidia 4090 windows desktop
@@ -48,12 +57,13 @@ Average stats:
 
 ## Getting Started
 
-Follow these instructions to set up and run benchmarks on your system.
+Follow these instructions to set up and run benchmarks on your system. For more detailed instructions, see the [Installation Guide](docs/installation_guide.md).
 
 ### Prerequisites
 
 - Python 3.11 or higher
 - [Ollama](https://ollama.com/) installed and configured
+- NVIDIA GPU with appropriate drivers (for GPU acceleration)
 
 ### Installation
 
@@ -106,19 +116,32 @@ Follow these instructions to set up and run benchmarks on your system.
    python benchmark.py --verbose --models deepseek-r1:70b --prompts "Write a hello world program" "Explain quantum computing"
    ```
 
+   For coding challenge evaluation:
+   
+   ```bash
+   python benchmark.py --test-coding --models granite-code:3b starcoder2:3b qwen2.5-coder:3b
+   ```
+
 ### Command Line Options
 
 - `-v, --verbose`: Enable detailed output including streaming responses
 - `-m, --models`: Space-separated list of models to benchmark (defaults to all available models)
 - `-p, --prompts`: Space-separated list of custom prompts (defaults to a predefined set testing various capabilities)
+- `--test-coding`: Run only the coding challenge and save solutions to files
 
-The default benchmark suite includes prompts testing:
+For a complete list of options and advanced usage examples, see the [User Guide](docs/user_guide.md).
 
-- Analytical reasoning
-- Creative writing
-- Complex analysis
-- Technical knowledge
-- Structured output generation
+## Enhanced Features
+
+This benchmark suite now includes several enhanced features:
+
+- GPU optimization for NVIDIA GPUs (especially GTX 1080)
+- Model filtering based on VRAM requirements
+- Benchmark result storage and comparison
+- Coding challenge evaluation with automatic solution extraction
+- Model recommendations based on performance and use case
+
+See the full [User Guide](docs/user_guide.md) for details on using these features.
 
 ## Contributing
 

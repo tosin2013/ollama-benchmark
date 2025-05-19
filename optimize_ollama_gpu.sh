@@ -135,8 +135,16 @@ elif [[ "$PROFILE" == "conservative" ]]; then
 elif [[ "$PROFILE" == "balanced" ]]; then
   # Balanced profile - default settings
   echo -e "${YELLOW}Using balanced profile (default settings)${NC}"
+elif [[ "$PROFILE" == "gtx1080" ]]; then
+  # GTX 1080-specific optimizations
+  GPU_OVERHEAD=200
+  MAX_VRAM=7900  # Reserve ~100MB for system
+  FLASH_ATTENTION="true"
+  NUM_PARALLEL=1
+  CONTEXT_LENGTH=4096
+  echo -e "${YELLOW}Using GTX 1080 optimized profile${NC}"
 else
-  echo -e "${RED}Invalid profile: $PROFILE. Must be 'balanced', 'aggressive', or 'conservative'.${NC}"
+  echo -e "${RED}Invalid profile: $PROFILE. Must be 'balanced', 'aggressive', 'conservative', or 'gtx1080'.${NC}"
   exit 1
 fi
 
